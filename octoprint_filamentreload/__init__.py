@@ -10,7 +10,7 @@ class FilamentReloadedPlugin(octoprint.plugin.StartupPlugin,
                              octoprint.plugin.EventHandlerPlugin,
                              octoprint.plugin.TemplatePlugin,
                              octoprint.plugin.SettingsPlugin):
-
+    
     def initialize(self):
         self._logger.info("Running RPi.GPIO version '{0}'".format(GPIO.VERSION))
         if GPIO.VERSION < "0.6":       # Need at least 0.6 for edge detection
@@ -20,6 +20,16 @@ class FilamentReloadedPlugin(octoprint.plugin.StartupPlugin,
 
     def on_after_startup(self):
         self._logger.info("Filament Sensor Reloaded started")
+        self.pin = int(self._settings.get(["pin"]))
+        self.bounce = int(self._settings.get(["bounce"]))
+        self.switch = int(self._settings.get(["switch"]))
+
+        if self._settings.get(["pin"]) != "-1":   # If a pin is defined
+            self._logger.info("Filament Sensor active on GPIO Pin [%s]"%self.pin)
+            GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)    # Initialize GPIO as INPUT
+
+    def on_settings_save(self, data):
+        octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
         self.pin = int(self._settings.get(["pin"]))
         self.bounce = int(self._settings.get(["bounce"]))
         self.switch = int(self._settings.get(["switch"]))
