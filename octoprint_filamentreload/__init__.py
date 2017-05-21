@@ -15,7 +15,6 @@ class FilamentReloadedPlugin(octoprint.plugin.StartupPlugin,
         self._logger.info("Running RPi.GPIO version '{0}'".format(GPIO.VERSION))
         if GPIO.VERSION < "0.6":       # Need at least 0.6 for edge detection
             raise Exception("RPi.GPIO must be greater than 0.6")
-        GPIO.setmode(GPIO.BOARD)       # Use the board numbering scheme
         GPIO.setwarnings(False)        # Disable GPIO warnings
 
     def on_after_startup(self):
@@ -23,6 +22,12 @@ class FilamentReloadedPlugin(octoprint.plugin.StartupPlugin,
         self.pin = int(self._settings.get(["pin"]))
         self.bounce = int(self._settings.get(["bounce"]))
         self.switch = int(self._settings.get(["switch"]))
+        self.mode = int(self._settings.get(["mode"]))
+
+        if self.mode == "0":
+            GPIO.setmode(GPIO.BOARD)
+        else:
+            GPIO.setmode(GPIO.BCM)
 
         if self._settings.get(["pin"]) != "-1":   # If a pin is defined
             self._logger.info("Filament Sensor active on GPIO Pin [%s]"%self.pin)
@@ -33,6 +38,13 @@ class FilamentReloadedPlugin(octoprint.plugin.StartupPlugin,
         self.pin = int(self._settings.get(["pin"]))
         self.bounce = int(self._settings.get(["bounce"]))
         self.switch = int(self._settings.get(["switch"]))
+        self.mode = int(self._settings.get(["mode"]))
+
+        if self.mode == "0":
+            GPIO.setmode(GPIO.BOARD)
+        else:
+            GPIO.setmode(GPIO.BCM)
+
 
         if self._settings.get(["pin"]) != "-1":   # If a pin is defined
             self._logger.info("Filament Sensor active on GPIO Pin [%s]"%self.pin)
@@ -42,7 +54,8 @@ class FilamentReloadedPlugin(octoprint.plugin.StartupPlugin,
         return dict(
             pin     = -1,   # Default is no pin
             bounce  = 250,  # Debounce 250ms
-            switch  = 0    # Normally Open
+            switch  = 0,    # Normally Open
+            mode    = 0     # Board Mode
         )
 
     def get_template_configs(self):
